@@ -5,6 +5,7 @@
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = test_input($_POST["username"]);
     $password = test_input($_POST["password"]);
+
     //Check if the credentials match
 if($username === "admin" && $password ==="admin#123") {
     //Successful login
@@ -40,7 +41,7 @@ function test_input($data) {
         ?>
         <div class="login-form">
             <div class="login-header">
-                <header>Login</header>
+                <header>Adminstration Login</header>
             </div>
             <div class="input-box">
                 <label for="text">Username</label>
