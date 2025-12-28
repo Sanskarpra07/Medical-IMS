@@ -1,44 +1,17 @@
-<?php
-    session_start();
-// $username = $password = "";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = test_input($_POST["username"]);
-    $password = test_input($_POST["password"]);
-
-    //Check if the credentials match
-if($username === "admin" && $password ==="admin#123") {
-    //Successful login
-    $_SESSION['logged_in'] = true;
-    $_SESSION['username'] = $username;
-    header("Location: dashboard.php"); //Redirect to dashboard
-    exit ();
-}
-    else{
-        //If failed
-        $error_message = "Invalid Username or Password!";
-    }
-}
-
-function test_input($data) {
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
-    return $data;
-}
-?>
 <html>
 <head>
     <title>Login Authentication</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+    <form method="post" action="process_login.php">
         <?php
-            if (isset($error_message)) {
-                echo '. $error_message .' ;
-        }
-        ?>
+        session_start();
+        if (!empty($_SESSION['error_message'])) {
+        echo '<p style="color: red; text-align: center;">' . htmlspecialchars($_SESSION['error_message']). '<p>';
+        unset($_SESSION['error_message']); //Clear after showing
+    }
+    ?>
         <div class="login-form">
             <div class="login-header">
                 <header>Adminstration Login</header>

@@ -1,5 +1,5 @@
 <?php
-    require '../db.php';
+    require_once'../db.php';
 
     //sql query to insert a new table
     $sql = "INSERT INTO products(product_name, description, price, stock, created_at)
