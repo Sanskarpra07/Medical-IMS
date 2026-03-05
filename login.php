@@ -33,8 +33,8 @@
                         <a href="#">Forget Password?</a>
                     </section>
                 </div> 
-                    <div class="login-button">
-                        <button type="submit" id="submit">Login</button>
+                <div class="login-button">
+                    <button type="submit" id="submit">Login</button>
             </div>
         </div>
 </form>
