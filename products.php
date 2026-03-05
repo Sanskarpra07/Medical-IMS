@@ -86,7 +86,7 @@ $current_page = 'products';
                         <?php $sno = 1; while ($row = mysqli_fetch_assoc($result)): ?>
                         <tr>
                         <td class="ps-4 text-muted"><?= $sno++ ?></td>
-                        <td class="fw-semibold"><?= htmlspecialchars($row ['product_name']) ?></td>
+                        <td class="fw-semibold"><?= htmlspecialchars($row['product_name']) ?></td>
                         <td>
                                     <span class="badge bg-secondary">
                                         <?= htmlspecialchars($row['category_name'] ?? 'Uncategorized') ?>
