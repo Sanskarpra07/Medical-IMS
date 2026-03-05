@@ -1,181 +1,121 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Register - Create Account</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .error-message {
-            color: #d32f2f;
-            background: #ffebee;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-        .success-message {
-            color: #388e3c;
-            background: #e8f5e9;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-    </style>
-</head>
-<body>
 <?php
-require_once 'config.php';
+session_start();
 
-$username = $email = $password = $confirm_password = "";
-$errors = array();
+// Redirect if not logged in
+if (!isset($_SESSION['username'])) {
+    header("Location: login.php");
+    exit();
+}
+
+require_once 'db.php'; // Get $conn
+
+$errors = [];
 $success = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Sanitize inputs
-    $username = test_input($_POST["username"]);
-    $email = test_input($_POST["email"]);
-    $password = $_POST["password"];
-    $confirm_password = $_POST["confirm_password"];
-    
-    // Validate username
-    if (empty($username)) {
-        $errors[] = "Username is required";
-    } elseif (strlen($username) < 3) {
-        $errors[] = "Username must be at least 3 characters";
-    } elseif (strlen($username) > 50) {
-        $errors[] = "Username must be less than 50 characters";
-    } elseif (!preg_match("/^[a-zA-Z0-9_]+$/", $username)) {
-        $errors[] = "Username can only contain letters, numbers, and underscores";
-    }
-    
-    // Validate email
-    if (empty($email)) {
-        $errors[] = "Email is required";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "Invalid email format";
-    }
-    
-    // Validate password
-    if (empty($password)) {
-        $errors[] = "Password is required";
-    } elseif (strlen($password) < 6) {
-        $errors[] = "Password must be at least 6 characters";
-    }
-    
-    // Validate confirm password
-    if (empty($confirm_password)) {
-        $errors[] = "Please confirm your password";
-    } elseif ($password !== $confirm_password) {
-        $errors[] = "Passwords do not match";
-    }
-    
-    // If no errors, check if user already exists
+// ── HANDLE REGISTER Action ──────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    // Basic validation
+    if (empty($username)) $errors[] = "Username is required.";
+    if (empty($password)) $errors[] = "Password is required.";
+
     if (empty($errors)) {
-        $conn = getDBConnection();
-        
-        // Check if username exists
-        $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-        $stmt->store_result();
-        
-        if ($stmt->num_rows > 0) {
-            $errors[] = "Username already taken";
-        }
-        $stmt->close();
-        
-        // Check if email exists
-        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $stmt->store_result();
-        
-        if ($stmt->num_rows > 0) {
-            $errors[] = "Email already registered";
-        }
-        $stmt->close();
-        
-        // If still no errors, insert the user
-        if (empty($errors)) {
+        // Check if username already exists
+        $stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE username = ?");
+        mysqli_stmt_bind_param($stmt, "s", $username);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_store_result($stmt);
+
+        if (mysqli_stmt_num_rows($stmt) > 0) {
+            $errors[] = "Username already taken.";
+        } else {
+            // ── INSERT new user ──────────────────────────────────────────────
+            // Note: I used 'password_eg' to match your phpMyAdmin screenshot
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = mysqli_prepare($conn, "INSERT INTO users (username, password_eg) VALUES (?, ?)");
+            mysqli_stmt_bind_param($stmt, "ss", $username, $hashed_password);
             
-            $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-            $stmt->bind_param("sss", $username, $email, $hashed_password);
-            
-            if ($stmt->execute()) {
-                $success = "Registration successful! You can now <a href='login.php'>login</a>";
-                $username = $email = "";
+            if (mysqli_stmt_execute($stmt)) {
+                $success = "User '$username' registered successfully!";
             } else {
-                $errors[] = "Registration failed. Please try again.";
+                $errors[] = "Database error: " . mysqli_error($conn);
             }
-            
-            $stmt->close();
         }
-        
-        $conn->close();
     }
 }
 
-function test_input($data) {
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
-    return $data;
-}
+$current_page = 'users';
 ?>
 
-    <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-        <div class="login-form">
-            <div class="login-header">
-                <header>Register</header>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User — Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style> body { background-color: #f0f2f5; } </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row flex-nowrap">
+
+        <?php require_once 'includes/sidebar.php'; ?>
+
+        <div class="col py-4 px-4">
+
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h4 class="fw-bold mb-0">
+                    <i class="bi bi-person-plus me-2 text-primary"></i>Add New User
+                </h4>
+                <a href="users.php" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Users
+                </a>
             </div>
-            
-            <?php if (!empty($errors)): ?>
-                <div class="error-message">
-                    <?php foreach ($errors as $error): ?>
-                        <p style="margin: 5px 0;"><?php echo $error; ?></p>
-                    <?php endforeach; ?>
+
+             <?php if (!empty($errors)): ?>
+                <div class="alert alert-danger py-2 small">
+                    <?php foreach ($errors as $e) echo "<div>$e</div>"; ?>
                 </div>
             <?php endif; ?>
-            
-            <?php if (!empty($success)): ?>
-                <div class="success-message">
-                    <?php echo $success; ?>
-                </div>
+
+            <?php if ($success): ?>
+                <div class="alert alert-success py-2 small"><?= $success ?></div>
             <?php endif; ?>
-            
-            <div class="input-box">
-                <label for="username">Username</label>
-                <input type="text" name="username" id="username" class="input-field" 
-                       placeholder="Username" value="<?php echo htmlspecialchars($username); ?>" required>
+
+            <div class="card shadow-sm border-0 rounded-3" style="max-width: 500px;">
+                <div class="card-body p-4">
+                    <form method="POST" action="register.php">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Username <span class="text-danger">*</span></label>
+                            <input type="text" name="username" class="form-control" placeholder="Enter username" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small">Password <span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-person-check me-1"></i>Create User
+                            </button>
+                            <a href="users.php" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+
+                    </form>
+                </div>
             </div>
-            
-            <div class="input-box">
-                <label for="email">Email</label>
-                <input type="email" name="email" id="email" class="input-field" 
-                       placeholder="Email" value="<?php echo htmlspecialchars($email); ?>" required>
-            </div>
-            
-            <div class="input-box">
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password" class="input-field" 
-                       placeholder="Password (min 6 characters)" required>
-            </div>
-            
-            <div class="input-box">
-                <label for="confirm_password">Confirm Password</label>
-                <input type="password" name="confirm_password" id="confirm_password" class="input-field" 
-                       placeholder="Confirm Password" required>
-            </div>
-            
-            <div class="login-button">
-                <button type="submit" id="submit">Register</button>
-            </div>
-            
-            <div style="text-align: center; margin-top: 15px;">
-                <p>Already have an account? <a href="login.php">Login here</a></p>
-            </div>
+
         </div>
-    </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
