@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <html>
 <head>
     <title>Login Authentication</title>
@@ -6,9 +7,8 @@
 <body>
     <form method="post" action="process_login.php">
         <?php
-        session_start();
         if (!empty($_SESSION['error_message'])) {
-        echo '<p style="color: red; text-align: center;">' . htmlspecialchars($_SESSION['error_message']). '<p>';
+        echo '<p style="color: red; text-align: center;">' . htmlspecialchars($_SESSION['error_message']). '</p>';
         unset($_SESSION['error_message']); //Clear after showing
     }
     ?>
