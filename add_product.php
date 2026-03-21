@@ -17,6 +17,7 @@ $product = [
     'description' => '',
     'price' => '',
     'stock' => '',
+    'expiry_date'  => '',   // ← ADD THIS
     'category_id' => ''
 ];
 
@@ -45,6 +46,7 @@ $product = [
     $description  = trim($_POST['description'] ?? '');
     $price        = $_POST['price'] ?? '';
     $stock        = $_POST['stock'] ?? '';
+    $expiry_date  = !empty($_POST['expiry_date']) ? $_POST['expiry_date'] : null;
     $category_id  = $_POST['category_id'] ?? null;
     $edit_id      = (int)($_POST['edit_id'] ?? 0);
 
@@ -57,19 +59,18 @@ $product = [
         if ($edit_id > 0) {
             // ── UPDATE existing product ──────────────────────────────────
             $stmt = mysqli_prepare($conn,
-                "UPDATE products SET product_name=?, description=?, price=?, stock=?, category_id=? WHERE id=?"
+            "UPDATE products SET product_name=?, description=?, price=?, stock=?, expiry_date=?, category_id=? WHERE id=?"
             );
             $cat = $category_id ?: null;
-            mysqli_stmt_bind_param($stmt, "ssdiii", $product_name, $description, $price, $stock, $cat, $edit_id);
+            mysqli_stmt_bind_param($stmt, "ssdisii", $product_name, $description, $price, $stock, $expiry_date, $cat, $edit_id);
         } else {
             // ── INSERT new product ───────────────────────────────────────
             $stmt = mysqli_prepare($conn,
-                "INSERT INTO products (product_name, description, price, stock, category_id) VALUES (?, ?, ?, ?, ?)"
+                "INSERT INTO products (product_name, description, price, stock, expiry_date, category_id) VALUES (?, ?, ?, ?, ?, ?)"
             );
             $cat = $category_id ?: null;
-            mysqli_stmt_bind_param($stmt, "ssdii", $product_name, $description, $price, $stock, $cat);
+            mysqli_stmt_bind_param($stmt, "ssdisi", $product_name, $description, $price, $stock, $expiry_date, $cat);
         }
-
         if (mysqli_stmt_execute($stmt)) {
             $_SESSION['success'] = $edit_id > 0 ? "Product updated successfully!" : "Product added successfully!";
             header("Location: products.php");
@@ -172,6 +173,13 @@ $current_page = 'products';
                                        value="<?= htmlspecialchars($product['stock']) ?>"
                                        placeholder="0" required>
                             </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Expiry Date</label>
+                            <input type="date" name="expiry_date" class="form-control"
+                                value="<?= htmlspecialchars($product['expiry_date'] ?? '') ?>">
+                            <small class="text-muted">Leave empty if no expiry date.</small>
                         </div>
 
                         <div class="mb-4">
