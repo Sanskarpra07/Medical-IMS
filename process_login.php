@@ -26,10 +26,12 @@ $user= mysqli_fetch_assoc($result);
 
 //Check if user exists and password matches
 // For now Comparing plain texts password 
-if ($user && $password === $user['password_eg']) {
+if ($user && password_verify($password, $user['password_eg'])) {
     //Login Successfull
     $_SESSION['logged_in'] = true;
     $_SESSION['username'] = $user['username']; //Store username in session
+
+    $_SESSION['role'] = $user['role'];  // Store user role in session
 
     //Redirected to dashboard
     header("Location: dashboard.php");
