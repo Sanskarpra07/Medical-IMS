@@ -7,6 +7,14 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
+// Staff cannot access this page
+if ($_SESSION['role'] !== 'admin') {
+    header("Location: dashboard.php");
+    exit();
+}
+
+require_once 'includes/auth.php';
+require_admin(); // Only admins can add users
 require_once 'db.php'; // Get $conn
 
 $errors = [];
