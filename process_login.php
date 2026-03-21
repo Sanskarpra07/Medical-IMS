@@ -13,7 +13,7 @@ if ($username ==='' || $password === '') {
     //Store an error messsage in session
     $_SESSION['error_message'] = 'Please enter both username and password';
     //Then Redirect to the login.php
-    header("Location:login.php");
+    header("Location: login.php");
     exit();
 }
 
@@ -32,13 +32,13 @@ if ($user && $password === $user['password_eg']) {
     $_SESSION['username'] = $user['username']; //Store username in session
 
     //Redirected to dashboard
-    header("Location:dashboard.php");
+    header("Location: dashboard.php");
     exit();
 }
 
     else {
         $_SESSION['error_message'] = "Invalid Username or Password";
-        header("Location:login.php");
+        header("Location: login.php");
         exit();
     }
 
