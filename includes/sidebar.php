@@ -31,7 +31,11 @@ function nav_link($href, $icon, $label, $current_page) {
             <?php nav_link('dashboard.php',  'bi-speedometer2',  'Dashboard',   $current_page); ?>
             <?php nav_link('products.php',   'bi-box-seam',      'Products',    $current_page); ?>
             <?php nav_link('categories.php', 'bi-tags',          'Categories',  $current_page); ?>
-            <?php nav_link('users.php',      'bi-people',        'Users',       $current_page); ?>
+            <?php nav_link('stock_log.php',  'bi-journal-text', 'Stock Log',   $current_page); ?>
+            <!-- Only the admin can see the user module -->
+            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?> 
+            <?php nav_link('users.php', 'bi-people', 'Users', $current_page); ?>
+            <?php endif; ?>
             <?php nav_link('login.php', 'bi bi-door-open', 'Logout', $current_page); ?>
         </ul>
         
