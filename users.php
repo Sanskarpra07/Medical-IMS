@@ -5,6 +5,12 @@ if (!isset($_SESSION['username'])){
     header("Location: login.php");
     exit();
 }
+// Staff cannot access this page
+if ($_SESSION['role'] !== 'admin') {
+    header("Location: dashboard.php");
+    exit();
+}
+
 
 require_once 'db.php';
 
