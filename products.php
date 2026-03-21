@@ -7,7 +7,7 @@ if (!isset($_SESSION['username'])){
     header("Location: login.php");
     exit();
 }
- require_once 'db.php';
+require_once 'db.php';
 
 //Handle Delete Action
 // When user click delete, the page reload with ?action=delete&id=X
@@ -22,12 +22,28 @@ if (isset($_GET['action']) && $_GET['action'] ==='delete' && isset($_GET['id']))
 }
 
 //Fetch all products with their category name
-$result = mysqli_query($conn,
-"SELECT p.*, c.name AS category_name
-FROM products p
-LEFT JOIN categories c ON p.category_id =c.id
-ORDER BY p.created_at DESC" 
-);
+$search = trim($_GET['search'] ?? '');
+
+if (!empty($search)) {
+    $stmt = mysqli_prepare($conn,
+        "SELECT p.*, c.name AS category_name
+         FROM products p
+         LEFT JOIN categories c ON p.category_id = c.id
+         WHERE p.product_name LIKE ? OR c.name LIKE ?
+         ORDER BY p.created_at DESC"
+    );
+    $like = "%$search%";
+    mysqli_stmt_bind_param($stmt, "ss", $like, $like);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+} else {
+    $result = mysqli_query($conn,
+        "SELECT p.*, c.name AS category_name
+         FROM products p
+         LEFT JOIN categories c ON p.category_id = c.id
+         ORDER BY p.created_at DESC"
+    );
+}
 
 $current_page = 'products';
 ?>
@@ -37,7 +53,7 @@ $current_page = 'products';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products - Admin Panel</title>
-     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style> body { background-color: #f0f2f5; } </style>
 </head>
@@ -58,6 +74,31 @@ $current_page = 'products';
                 </a>
             </div>
 
+            <!-- Search Bar -->
+            <form method="GET" action="products.php" class="mb-4">
+                <div class="input-group" style="max-width: 400px;">
+                    <input type="text" name="search" class="form-control"
+                        placeholder="Search by product name or category..."
+                        value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+                    <button type="submit" class="btn btn-outline-secondary">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    <?php if (!empty($_GET['search'])): ?>
+                        <a href="products.php" class="btn btn-outline-danger">
+                            <i class="bi bi-x"></i>
+                        </a>
+                    <?php endif; ?>
+                </div>
+            </form>
+
+            <!-- Search result count -->
+            <?php if (!empty($search)): ?>
+                <p class="text-muted small mb-3">
+                    Showing <?= mysqli_num_rows($result) ?> result(s) for
+                    "<strong><?= htmlspecialchars($search) ?></strong>"
+                </p>
+            <?php endif; ?>
+
             <!-- Flash messages -->
             <?php if (!empty($_SESSION['success'])): ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -67,7 +108,7 @@ $current_page = 'products';
                 <?php unset($_SESSION['success']); ?>
             <?php endif; ?>
 
-             <!-- Products Table -->
+            <!-- Products Table -->
             <div class="card shadow-sm border-0 rounded-3">
                 <div class="card-body p-0">
                     <table class="table table-hover align-middle mb-0">
@@ -78,6 +119,7 @@ $current_page = 'products';
                                 <th>Category</th>
                                 <th>Price (Rs.)</th>
                                 <th>Stock</th>
+                                <th>Expiry Date</th>
                                 <th>Added On</th>
                                 <th class="text-center">Actions</th>
                             </tr>
@@ -85,45 +127,65 @@ $current_page = 'products';
                         <tbody>
                         <?php $sno = 1; while ($row = mysqli_fetch_assoc($result)): ?>
                         <tr>
-                        <td class="ps-4 text-muted"><?= $sno++ ?></td>
-                        <td class="fw-semibold"><?= htmlspecialchars($row['product_name']) ?></td>
-                        <td>
-                                    <span class="badge bg-secondary">
-                                        <?= htmlspecialchars($row['category_name'] ?? 'Uncategorized') ?>
-                                    </span>
-                        </td>
-                        <td><?= number_format($row['price'], 2) ?></td>
-                        <td>
-                            <!-- Shows Danger if low stock condition -->
-                            <?php if ($row['stock']<10): ?>
-                                 <span class="badge bg-danger"><?= $row['stock'] ?> ⚠</span>  
-                            <?php else: ?>
-                                 <span class="badge bg-success"><?= $row['stock'] ?></span>
-                        </td>
-                        <?php endif; ?> </td>
-                         <td class="text-muted small"><?= date('d M Y', strtotime($row['created_at'])) ?></td>
-                                <td class="text-center">
-                                    <!-- Edit button — passes ?id= to add_product.php -->
-                                    <a href="add_product.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-outline-primary me-1">
-                                        <i class="bi bi-pencil"></i> Edit
-                                    </a>
-                                    <!-- Delete — confirm before doing it -->
-                                    <a href="products.php?action=delete&id=<?= $row['id'] ?>"
-                                       class="btn btn-sm btn-outline-danger"
-                                       onclick="return confirm('Are you sure you want to delete this product?')">
-                                        <i class="bi bi-trash"></i> Delete
-                                    </a>
-                                </td>
-                            </tr>
+                            <td class="ps-4 text-muted"><?= $sno++ ?></td>
+                            <td class="fw-semibold"><?= htmlspecialchars($row['product_name']) ?></td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    <?= htmlspecialchars($row['category_name'] ?? 'Uncategorized') ?>
+                                </span>
+                            </td>
+                            <td><?= number_format($row['price'], 2) ?></td>
+                            <td>
+                                <!-- Shows Danger if low stock condition -->
+                                <?php if ($row['stock'] < 10): ?>
+                                    <span class="badge bg-danger"><?= $row['stock'] ?> ⚠</span>
+                                <?php else: ?>
+                                    <span class="badge bg-success"><?= $row['stock'] ?></span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if (!empty($row['expiry_date'])): ?>
+                                    <?php
+                                    $today   = new DateTime();
+                                    $expiry  = new DateTime($row['expiry_date']);
+                                    $diff    = $today->diff($expiry)->days;
+                                    $expired = $expiry < $today;
+                                    $soon    = !$expired && $diff <= 30;
+                                    ?>
+                                    <?php if ($expired): ?>
+                                        <span class="badge bg-danger">Expired</span>
+                                    <?php elseif ($soon): ?>
+                                        <span class="badge bg-warning text-dark"><?= $diff ?> days left</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-success"><?= date('d M Y', strtotime($row['expiry_date'])) ?></span>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span class="text-muted small">—</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="text-muted small"><?= date('d M Y', strtotime($row['created_at'])) ?></td>
+                            <td class="text-center">
+                                <!-- Edit button — passes ?id= to add_product.php -->
+                                <a href="add_product.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                <!-- Delete — confirm before doing it -->
+                                <a href="products.php?action=delete&id=<?= $row['id'] ?>"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Are you sure you want to delete this product?')">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </td>
+                        </tr>
                         <?php endwhile; ?>
 
-                        <?php if (mysqli_num_rows($result) ===0): ?>
+                        <?php if (mysqli_num_rows($result) === 0): ?>
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
-                                    No Products Found.<a href="add_product.php">Add One?</a>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    No Products Found. <a href="add_product.php">Add One?</a>
                                 </td>
-                            <tr>
-                             <?php endif; ?>
+                            </tr>
+                        <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -134,8 +196,5 @@ $current_page = 'products';
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-
 </body>
 </html>
