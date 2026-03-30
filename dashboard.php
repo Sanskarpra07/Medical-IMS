@@ -74,7 +74,9 @@ $current_page = 'dashboard.php';
 
         <div class="row g-4 mb-4">
 
+        <!-- Total Users for Admin Only -->
         <div class="col-sm-6 col-xl-3">
+            <?php if ($_SESSION['role'] === 'admin'): ?>
             <div class="card stat-card bg-primary text-white shadow-sm p-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -85,6 +87,7 @@ $current_page = 'dashboard.php';
                 </div>
                 <a href="users.php" class="text-white-50 small mt-2 d-block text-decoration-none">View all →</a>
             </div>
+            <?php endif; ?>
         </div>
 
         <!-- Total Products -->
