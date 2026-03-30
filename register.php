@@ -13,8 +13,6 @@ if ($_SESSION['role'] !== 'admin') {
     exit();
 }
 
-require_once 'includes/auth.php';
-require_admin(); // Only admins can add users
 require_once 'db.php'; // Get $conn
 
 $errors = [];
