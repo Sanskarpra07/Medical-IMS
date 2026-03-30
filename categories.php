@@ -159,5 +159,15 @@ $current_page = 'categories';
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Handles browser back button / bfcache -->
+    <script>
+        window.addEventListener('pageshow', function(event) {
+            // event.persisted = true means page was loaded from bfcache
+            if (event.persisted) {
+                window.location.replace('login.php');
+            }
+        });
+    </script>
 </body>
 </html>

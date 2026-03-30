@@ -6,6 +6,11 @@ error_reporting(E_ALL);
 
 session_start();
 
+// No-cache headers — prevents browser back button from showing cached page
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
+
 //Protects Page
 if (!isset($_SESSION['username'])) {
     header("Location: login.php");
@@ -170,5 +175,15 @@ $current_page = 'dashboard.php';
 
 <!-- Bootstrap 5 JS -->
 <script src="assests/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Handles browser back button / bfcache -->
+    <script>
+        window.addEventListener('pageshow', function(event) {
+            // event.persisted = true means page was loaded from bfcache
+            if (event.persisted) {
+                window.location.replace('login.php');
+            }
+        });
+    </script>
 </body>
 </html>
