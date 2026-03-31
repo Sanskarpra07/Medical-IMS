@@ -26,17 +26,31 @@
             </div>
             <div class="remember">
                 <section>
-                    <input type="checkbox" id="checkbox">
-                    <label for="checkbox">Remember Me</label>
+                    <input type="checkbox" id="show-password" onclick="togglePassword()">
+                    <label for="show-password">Show Password</label>
                 </section>
-                    <section>
+                    <!-- <section>
                         <a href="#">Forget Password?</a>
-                    </section>
+                    </section> -->
                 </div> 
                 <div class="login-button">
                     <button type="submit" id="submit">Login</button>
             </div>
         </div>
 </form>
+<script>
+function togglePassword() {
+    // Select the password input field by its ID
+    const passwordField = document.getElementById("password");
+    const checkbox = document.getElementById("show-password");
+
+    // Toggle the type attribute
+    if (checkbox.checked) {
+        passwordField.type = "text";
+    } else {
+        passwordField.type = "password";
+    }
+}
+</script>
 </body>
 </html>
