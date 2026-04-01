@@ -92,6 +92,7 @@ $current_page = 'categories';
 <head>
     <meta charset="UTF-8">
     <title>Categories — Admin Panel</title>
+    <link rel="icon" type="image/x-icon" href="assests/img/logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style> body { background-color: #f0f2f5; } </style>

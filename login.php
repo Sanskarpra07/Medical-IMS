@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Login Authentication</title>
+    <link rel="icon" type="image/x-icon" href="assests/img/logo.png">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
