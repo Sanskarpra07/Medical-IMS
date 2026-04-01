@@ -22,7 +22,7 @@ function nav_link($href, $icon, $label, $current_page) {
 
         <!-- Brand / Logo -->
         <a href="dashboard.php" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none border-bottom border-secondary w-100 pb-3">
-            <i class="bi bi-shield-lock-fill fs-4 me-2 text-info"></i>
+            <img src="assests/img/logo.png" alt="Logo" width="30" height="30" class="me-2">
             <span class="fs-5 fw-semibold d-none d-sm-inline">Admin Panel</span>
         </a>
 
