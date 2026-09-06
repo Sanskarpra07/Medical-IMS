@@ -35,25 +35,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mysqli_query($conn, "SELECT stock FROM products WHERE id = $product_id")
         );
 
-        $new_stock = $current['stock'] + $change_amount;
-
-        // Prevent negative stock
-        if ($new_stock < 0) {
-            $errors[] = "Cannot remove more than current stock ({$current['stock']} units).";
+        if (!$current) {
+            $errors[] = "Selected product not found.";
         } else {
-            // Update stock in products table
-            $stmt = mysqli_prepare($conn, "UPDATE products SET stock = ? WHERE id = ?");
-            mysqli_stmt_bind_param($stmt, "ii", $new_stock, $product_id);
-            mysqli_stmt_execute($stmt);
+            $new_stock = $current['stock'] + $change_amount;
 
-            // Log the change
-            $stmt = mysqli_prepare($conn,
-                "INSERT INTO stock_log (product_id, change_amount, reason, changed_by) VALUES (?, ?, ?, ?)"
-            );
-            mysqli_stmt_bind_param($stmt, "iiss", $product_id, $change_amount, $reason, $changed_by);
-            mysqli_stmt_execute($stmt);
+            // Prevent negative stock
+            if ($new_stock < 0) {
+                $errors[] = "Cannot remove more than current stock ({$current['stock']} units).";
+            } else {
+                // Update stock in products table
+                $stmt = mysqli_prepare($conn, "UPDATE products SET stock = ? WHERE id = ?");
+                mysqli_stmt_bind_param($stmt, "ii", $new_stock, $product_id);
+                mysqli_stmt_execute($stmt);
 
-            $success = "Stock updated successfully!";
+                // Log the change
+                $stmt = mysqli_prepare($conn,
+                    "INSERT INTO stock_log (product_id, change_amount, reason, changed_by) VALUES (?, ?, ?, ?)"
+                );
+                mysqli_stmt_bind_param($stmt, "iiss", $product_id, $change_amount, $reason, $changed_by);
+                mysqli_stmt_execute($stmt);
+
+                $success = "Stock updated successfully!";
+            }
         }
     }
 }
