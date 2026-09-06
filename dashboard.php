@@ -22,7 +22,7 @@ if (!isset($_SESSION['username'])) {
 $total_users = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FROM users"))['c'];
 $total_products = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FROM products"))['c'];
 $total_category = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FROM categories"))['c'];
-$low_stock = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FROM products WHERE stock<10"));['c'];
+$low_stock = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FROM products WHERE stock<10"))['c'];
 
 // Recent Products
 $recent = mysqli_query($conn, 
@@ -33,7 +33,7 @@ $recent = mysqli_query($conn,
   LIMIT 5"
 );
 
-$current_page = 'dashboard.php';
+$current_page = 'dashboard';
 ?>
 
 <!DOCTYPE html>
@@ -92,7 +92,7 @@ $current_page = 'dashboard.php';
         </div>
 
         <!-- Total Products -->
-        <div class="class-sm-6 col-xl-3">
+        <div class="col-sm-6 col-xl-3">
             <div class="card stat-card bg-primary text-white shadow-sm p-3">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -124,7 +124,7 @@ $current_page = 'dashboard.php';
                     <div class="card stat-card bg-warning text-dark shadow-sm p-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="fs-2 fw-bold"><?= $low_stock['c'] ?></div>
+                                <div class="fs-2 fw-bold"><?= $low_stock ?></div>
                                 <div class="small">Low Stock Items</div>
                             </div>
                             <i class="bi bi-exclamation-triangle stat-icon"></i>
