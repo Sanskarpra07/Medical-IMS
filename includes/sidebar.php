@@ -36,7 +36,7 @@ function nav_link($href, $icon, $label, $current_page) {
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?> 
             <?php nav_link('users.php', 'bi-people', 'Users', $current_page); ?>
             <?php endif; ?>
-            <?php nav_link('login.php', 'bi bi-door-open', 'Logout', $current_page); ?>
+            <?php nav_link('logout.php', 'bi-door-open', 'Logout', $current_page); ?>
         </ul>
         
 <!-- Logout at the bottom -->
