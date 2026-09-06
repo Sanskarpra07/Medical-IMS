@@ -127,7 +127,7 @@ $current_page = 'categories';
                                 </div>
                             <?php endif; ?>
 
-                            <form method="POST" action="categories.php">
+                            <form method="POST" action="add_categories.php">
                                 <input type="hidden" name="category_id" value="<?= $category['id'] ?>">
                                 
                                 <div class="mb-3">
